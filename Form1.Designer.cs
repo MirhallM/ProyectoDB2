@@ -28,12 +28,46 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Text = "Form1";
+            btnProbarConexion = new Button();
+            TablaResultados = new DataGridView();
+            ((System.ComponentModel.ISupportInitialize)TablaResultados).BeginInit();
+            SuspendLayout();
+            // 
+            // btnProbarConexion
+            // 
+            btnProbarConexion.Location = new Point(21, 22);
+            btnProbarConexion.Name = "btnProbarConexion";
+            btnProbarConexion.Size = new Size(143, 51);
+            btnProbarConexion.TabIndex = 0;
+            btnProbarConexion.Text = "Probar Conexion";
+            btnProbarConexion.UseVisualStyleBackColor = true;
+            btnProbarConexion.Click += btnProbarConexion_Click;
+            // 
+            // TablaResultados
+            // 
+            TablaResultados.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            TablaResultados.Dock = DockStyle.Bottom;
+            TablaResultados.Location = new Point(0, 91);
+            TablaResultados.Name = "TablaResultados";
+            TablaResultados.Size = new Size(800, 409);
+            TablaResultados.TabIndex = 1;
+            // 
+            // Form1
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(800, 500);
+            Controls.Add(TablaResultados);
+            Controls.Add(btnProbarConexion);
+            Name = "Form1";
+            Text = "Form1";
+            ((System.ComponentModel.ISupportInitialize)TablaResultados).EndInit();
+            ResumeLayout(false);
         }
 
         #endregion
+
+        private Button btnProbarConexion;
+        private DataGridView TablaResultados;
     }
 }
