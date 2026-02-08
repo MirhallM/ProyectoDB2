@@ -37,9 +37,9 @@
             TitlePanel = new Panel();
             lblTitulo = new Label();
             flowLayoutPanel1 = new FlowLayoutPanel();
-            button2 = new Button();
-            button1 = new Button();
-            button3 = new Button();
+            btnConectar = new Button();
+            btnGuardarConexion = new Button();
+            btnProbarConexion = new Button();
             tableLayoutPanel1 = new TableLayoutPanel();
             label2 = new Label();
             label3 = new Label();
@@ -68,6 +68,7 @@
             // 
             // splitContainer1
             // 
+            splitContainer1.BorderStyle = BorderStyle.FixedSingle;
             splitContainer1.Dock = DockStyle.Fill;
             splitContainer1.Location = new Point(0, 0);
             splitContainer1.Name = "splitContainer1";
@@ -83,29 +84,29 @@
             splitContainer1.Panel2.Controls.Add(flowLayoutPanel1);
             splitContainer1.Panel2.Controls.Add(tableLayoutPanel1);
             splitContainer1.Panel2.Controls.Add(pnlTitulo2);
-            splitContainer1.Panel2.Paint += splitContainer1_Panel2_Paint;
             splitContainer1.Size = new Size(808, 378);
             splitContainer1.SplitterDistance = 268;
             splitContainer1.TabIndex = 0;
             // 
             // PanelBotones
             // 
+            PanelBotones.BorderStyle = BorderStyle.FixedSingle;
             PanelBotones.Controls.Add(btnNueva);
             PanelBotones.Controls.Add(btnEditar);
             PanelBotones.Controls.Add(btnEliminar);
             PanelBotones.Dock = DockStyle.Bottom;
             PanelBotones.FlowDirection = FlowDirection.TopDown;
-            PanelBotones.Location = new Point(0, 260);
+            PanelBotones.Location = new Point(0, 258);
             PanelBotones.Name = "PanelBotones";
             PanelBotones.Padding = new Padding(10);
-            PanelBotones.Size = new Size(268, 118);
+            PanelBotones.Size = new Size(266, 118);
             PanelBotones.TabIndex = 2;
             // 
             // btnNueva
             // 
             btnNueva.Location = new Point(13, 13);
             btnNueva.Name = "btnNueva";
-            btnNueva.Size = new Size(252, 23);
+            btnNueva.Size = new Size(240, 23);
             btnNueva.TabIndex = 0;
             btnNueva.Text = "Nueva";
             btnNueva.UseVisualStyleBackColor = true;
@@ -114,7 +115,7 @@
             // 
             btnEditar.Location = new Point(13, 42);
             btnEditar.Name = "btnEditar";
-            btnEditar.Size = new Size(252, 23);
+            btnEditar.Size = new Size(240, 23);
             btnEditar.TabIndex = 1;
             btnEditar.Text = "Editar";
             btnEditar.UseVisualStyleBackColor = true;
@@ -123,7 +124,7 @@
             // 
             btnEliminar.Location = new Point(13, 71);
             btnEliminar.Name = "btnEliminar";
-            btnEliminar.Size = new Size(252, 23);
+            btnEliminar.Size = new Size(240, 23);
             btnEliminar.TabIndex = 2;
             btnEliminar.Text = "Eliminar";
             btnEliminar.UseVisualStyleBackColor = true;
@@ -135,18 +136,19 @@
             listaConexiones.ItemHeight = 15;
             listaConexiones.Location = new Point(0, 40);
             listaConexiones.Name = "listaConexiones";
-            listaConexiones.Size = new Size(268, 338);
+            listaConexiones.Size = new Size(266, 336);
             listaConexiones.TabIndex = 1;
             // 
             // TitlePanel
             // 
             TitlePanel.BackColor = SystemColors.ControlLight;
+            TitlePanel.BorderStyle = BorderStyle.FixedSingle;
             TitlePanel.Controls.Add(lblTitulo);
             TitlePanel.Dock = DockStyle.Top;
             TitlePanel.Location = new Point(0, 0);
             TitlePanel.Name = "TitlePanel";
             TitlePanel.Padding = new Padding(10);
-            TitlePanel.Size = new Size(268, 40);
+            TitlePanel.Size = new Size(266, 40);
             TitlePanel.TabIndex = 0;
             // 
             // lblTitulo
@@ -162,46 +164,50 @@
             // 
             // flowLayoutPanel1
             // 
-            flowLayoutPanel1.Controls.Add(button2);
-            flowLayoutPanel1.Controls.Add(button1);
-            flowLayoutPanel1.Controls.Add(button3);
+            flowLayoutPanel1.Controls.Add(btnConectar);
+            flowLayoutPanel1.Controls.Add(btnGuardarConexion);
+            flowLayoutPanel1.Controls.Add(btnProbarConexion);
             flowLayoutPanel1.Dock = DockStyle.Top;
             flowLayoutPanel1.FlowDirection = FlowDirection.RightToLeft;
-            flowLayoutPanel1.Location = new Point(0, 250);
+            flowLayoutPanel1.Location = new Point(0, 257);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
             flowLayoutPanel1.Padding = new Padding(10);
-            flowLayoutPanel1.Size = new Size(536, 46);
+            flowLayoutPanel1.Size = new Size(534, 46);
             flowLayoutPanel1.TabIndex = 2;
             // 
-            // button2
+            // btnConectar
             // 
-            button2.Location = new Point(438, 13);
-            button2.Name = "button2";
-            button2.Size = new Size(75, 23);
-            button2.TabIndex = 1;
-            button2.Text = "Conectar";
-            button2.UseVisualStyleBackColor = true;
+            btnConectar.Location = new Point(436, 13);
+            btnConectar.Name = "btnConectar";
+            btnConectar.Size = new Size(75, 23);
+            btnConectar.TabIndex = 1;
+            btnConectar.Text = "Conectar";
+            btnConectar.UseVisualStyleBackColor = true;
+            btnConectar.Click += btnConectar_Click;
             // 
-            // button1
+            // btnGuardarConexion
             // 
-            button1.Location = new Point(357, 13);
-            button1.Name = "button1";
-            button1.Size = new Size(75, 23);
-            button1.TabIndex = 0;
-            button1.Text = "Guardar";
-            button1.UseVisualStyleBackColor = true;
+            btnGuardarConexion.Location = new Point(355, 13);
+            btnGuardarConexion.Name = "btnGuardarConexion";
+            btnGuardarConexion.Size = new Size(75, 23);
+            btnGuardarConexion.TabIndex = 0;
+            btnGuardarConexion.Text = "Guardar";
+            btnGuardarConexion.UseVisualStyleBackColor = true;
+            btnGuardarConexion.Click += btnGuardarConexion_Click;
             // 
-            // button3
+            // btnProbarConexion
             // 
-            button3.Location = new Point(220, 13);
-            button3.Name = "button3";
-            button3.Size = new Size(131, 23);
-            button3.TabIndex = 2;
-            button3.Text = "Probar Conexion";
-            button3.UseVisualStyleBackColor = true;
+            btnProbarConexion.Location = new Point(218, 13);
+            btnProbarConexion.Name = "btnProbarConexion";
+            btnProbarConexion.Size = new Size(131, 23);
+            btnProbarConexion.TabIndex = 2;
+            btnProbarConexion.Text = "Probar Conexion";
+            btnProbarConexion.UseVisualStyleBackColor = true;
+            btnProbarConexion.Click += btnProbarConexion_Click;
             // 
             // tableLayoutPanel1
             // 
+            tableLayoutPanel1.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
             tableLayoutPanel1.ColumnCount = 2;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
@@ -227,7 +233,7 @@
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
-            tableLayoutPanel1.Size = new Size(536, 210);
+            tableLayoutPanel1.Size = new Size(534, 217);
             tableLayoutPanel1.TabIndex = 1;
             // 
             // label2
@@ -236,7 +242,7 @@
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label2.ImageAlign = ContentAlignment.MiddleRight;
-            label2.Location = new Point(86, 7);
+            label2.Location = new Point(86, 8);
             label2.Name = "label2";
             label2.Size = new Size(71, 21);
             label2.TabIndex = 0;
@@ -248,7 +254,7 @@
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label3.ImageAlign = ContentAlignment.MiddleRight;
-            label3.Location = new Point(85, 42);
+            label3.Location = new Point(85, 44);
             label3.Name = "label3";
             label3.Size = new Size(72, 21);
             label3.TabIndex = 1;
@@ -259,7 +265,7 @@
             lblPuerto.Anchor = AnchorStyles.Right;
             lblPuerto.AutoSize = true;
             lblPuerto.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblPuerto.Location = new Point(98, 77);
+            lblPuerto.Location = new Point(98, 80);
             lblPuerto.Name = "lblPuerto";
             lblPuerto.Size = new Size(59, 21);
             lblPuerto.TabIndex = 2;
@@ -270,7 +276,7 @@
             label4.Anchor = AnchorStyles.Right;
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI", 12F);
-            label4.Location = new Point(45, 112);
+            label4.Location = new Point(45, 116);
             label4.Name = "label4";
             label4.Size = new Size(112, 21);
             label4.TabIndex = 3;
@@ -281,7 +287,7 @@
             label5.Anchor = AnchorStyles.Right;
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI", 12F);
-            label5.Location = new Point(90, 147);
+            label5.Location = new Point(90, 152);
             label5.Name = "label5";
             label5.Size = new Size(67, 21);
             label5.TabIndex = 4;
@@ -292,7 +298,7 @@
             label6.Anchor = AnchorStyles.Right;
             label6.AutoSize = true;
             label6.Font = new Font("Segoe UI", 12F);
-            label6.Location = new Point(65, 182);
+            label6.Location = new Point(65, 188);
             label6.Name = "label6";
             label6.Size = new Size(92, 21);
             label6.TabIndex = 5;
@@ -301,61 +307,62 @@
             // tbNombre
             // 
             tbNombre.Font = new Font("Segoe UI", 12F);
-            tbNombre.Location = new Point(163, 3);
+            tbNombre.Location = new Point(164, 4);
             tbNombre.Name = "tbNombre";
-            tbNombre.Size = new Size(370, 29);
+            tbNombre.Size = new Size(366, 29);
             tbNombre.TabIndex = 6;
             // 
             // tbServidor
             // 
             tbServidor.Font = new Font("Segoe UI", 12F);
-            tbServidor.Location = new Point(163, 38);
+            tbServidor.Location = new Point(164, 40);
             tbServidor.Name = "tbServidor";
-            tbServidor.Size = new Size(370, 29);
+            tbServidor.Size = new Size(366, 29);
             tbServidor.TabIndex = 7;
             // 
             // tbPuerto
             // 
             tbPuerto.Font = new Font("Segoe UI", 12F);
-            tbPuerto.Location = new Point(163, 73);
+            tbPuerto.Location = new Point(164, 76);
             tbPuerto.Name = "tbPuerto";
-            tbPuerto.Size = new Size(370, 29);
+            tbPuerto.Size = new Size(366, 29);
             tbPuerto.TabIndex = 8;
             tbPuerto.Text = "50000";
             // 
             // tbBDD
             // 
             tbBDD.Font = new Font("Segoe UI", 12F);
-            tbBDD.Location = new Point(163, 108);
+            tbBDD.Location = new Point(164, 112);
             tbBDD.Name = "tbBDD";
-            tbBDD.Size = new Size(370, 29);
+            tbBDD.Size = new Size(366, 29);
             tbBDD.TabIndex = 9;
             // 
             // tbUsuario
             // 
             tbUsuario.Font = new Font("Segoe UI", 12F);
-            tbUsuario.Location = new Point(163, 143);
+            tbUsuario.Location = new Point(164, 148);
             tbUsuario.Name = "tbUsuario";
-            tbUsuario.Size = new Size(370, 29);
+            tbUsuario.Size = new Size(366, 29);
             tbUsuario.TabIndex = 10;
             // 
             // tbContra
             // 
             tbContra.Font = new Font("Segoe UI", 12F);
-            tbContra.Location = new Point(163, 178);
+            tbContra.Location = new Point(164, 184);
             tbContra.Name = "tbContra";
             tbContra.PasswordChar = '*';
-            tbContra.Size = new Size(370, 29);
+            tbContra.Size = new Size(366, 29);
             tbContra.TabIndex = 11;
             // 
             // pnlTitulo2
             // 
             pnlTitulo2.BackColor = SystemColors.ControlLight;
+            pnlTitulo2.BorderStyle = BorderStyle.FixedSingle;
             pnlTitulo2.Controls.Add(label1);
             pnlTitulo2.Dock = DockStyle.Top;
             pnlTitulo2.Location = new Point(0, 0);
             pnlTitulo2.Name = "pnlTitulo2";
-            pnlTitulo2.Size = new Size(536, 40);
+            pnlTitulo2.Size = new Size(534, 40);
             pnlTitulo2.TabIndex = 0;
             // 
             // label1
@@ -376,7 +383,7 @@
             ClientSize = new Size(808, 378);
             Controls.Add(splitContainer1);
             Name = "Login";
-            Text = "Login";
+            Text = "Gestor DB2";
             splitContainer1.Panel1.ResumeLayout(false);
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
@@ -405,9 +412,9 @@
         private Panel pnlTitulo2;
         private TableLayoutPanel tableLayoutPanel1;
         private FlowLayoutPanel flowLayoutPanel1;
-        private Button button2;
-        private Button button1;
-        private Button button3;
+        private Button btnConectar;
+        private Button btnGuardarConexion;
+        private Button btnProbarConexion;
         private Label label2;
         private Label label1;
         private Label label3;

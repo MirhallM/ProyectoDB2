@@ -204,6 +204,7 @@
             richTxtBoxSQL.TabIndex = 1;
             richTxtBoxSQL.Text = "";
             richTxtBoxSQL.WordWrap = false;
+            richTxtBoxSQL.TextChanged += richTxtBoxSQL_TextChanged;
             // 
             // pnlBotonesSQL
             // 
@@ -366,7 +367,8 @@
             ClientSize = new Size(1264, 681);
             Controls.Add(splitContainer1);
             Name = "PaginaPrincipal";
-            Text = "PaginaPrincipal";
+            Text = "Gestor DB2";
+            FormClosed += PaginaPrincipal_FormClosed;
             Load += PaginaPrincipal_Load;
             splitContainer1.Panel1.ResumeLayout(false);
             splitContainer1.Panel2.ResumeLayout(false);

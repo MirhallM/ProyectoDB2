@@ -12,18 +12,34 @@ namespace ProyectoDB2
 {
     public partial class PaginaPrincipal : Form
     {
+        private GestorConexionDb2? gestorConexion;
+
         public PaginaPrincipal()
         {
             InitializeComponent();
         }
+        public PaginaPrincipal(GestorConexionDb2 gestor)
+        {
+            InitializeComponent();
+            gestorConexion = gestor;
+        }
+
 
         private void PaginaPrincipal_Load(object sender, EventArgs e)
         {
-            // TODO: Cambiar al arbol de DB2 cuando ya estemos en ese paso
-            ConstruirArbolMock();
             AplicarModoEditor(ModoEditor.SQL);
 
-            //TODO: ConstruirArbolDesdeDB2();
+            if (gestorConexion == null)
+            {
+                EscribirMensaje("No hay conexión activa a DB2. Regresa al login.");
+                return;
+            }
+
+            // Temporal
+            ConstruirArbolMock();
+
+            // Próximo paso:
+            // ConstruirArbolDesdeDB2();
         }
 
         private enum ModoEditor
@@ -211,8 +227,8 @@ namespace ProyectoDB2
         private class InfoNodoBD
         {
             public TipoObjetoBD Tipo { get; set; }
-            public string Nombre { get; set; }
-            public string Esquema { get; set; }
+            public string Nombre { get; set; } = string.Empty;
+            public string Esquema { get; set; } = string.Empty;
         }
 
         private void MostrarDDL(string ddl)
@@ -232,6 +248,23 @@ namespace ProyectoDB2
                 btnSQL.Enabled = true;
                 btnDDL.Enabled = false;
             }
+        }
+        private bool EsConsultaSelect(string sql)
+        {
+            if (string.IsNullOrWhiteSpace(sql)) return false;
+
+            string s = sql.TrimStart();
+
+            // Saltar comentarios al inicio (opcional pero útil)
+            while (s.StartsWith("--"))
+            {
+                int salto = s.IndexOf('\n');
+                if (salto < 0) return false;
+                s = s.Substring(salto + 1).TrimStart();
+            }
+
+            return s.StartsWith("select", StringComparison.OrdinalIgnoreCase)
+                || s.StartsWith("with", StringComparison.OrdinalIgnoreCase);
         }
 
 
@@ -278,7 +311,14 @@ namespace ProyectoDB2
                 return;
             }
 
-            string sql = sqlActual?.Trim();
+            if (gestorConexion == null)
+            {
+                EscribirMensaje("No hay conexión activa a DB2. Regresa al login.");
+                return;
+            }
+
+            sqlActual = richTxtBoxSQL.Text;
+            string sql = sqlActual.Trim();
 
             if (string.IsNullOrWhiteSpace(sql))
             {
@@ -286,16 +326,25 @@ namespace ProyectoDB2
                 return;
             }
 
-            if (sql.StartsWith("select", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                CargarResultadosMock();
-                EscribirMensaje("SELECT ejecutado correctamente (mock).");
+                if (EsConsultaSelect(sql))
+                {
+                    DataTable tabla = gestorConexion.EjecutarConsulta(sql);
+                    MostrarResultados(tabla);
+                }
+                else
+                {
+                    int filas = gestorConexion.EjecutarComando(sql);
+                    dataGridResultados.DataSource = null;
+                    EscribirMensaje($"Sentencia ejecutada correctamente. Filas afectadas: {filas}");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                EscribirMensaje("Sentencia ejecutada correctamente (mock).");
+                dataGridResultados.DataSource = null;
+                EscribirMensaje("Error al ejecutar SQL: " + ex.Message);
             }
-
         }
 
         private void toolTipLimpiar_Click(object sender, EventArgs e)
@@ -333,34 +382,18 @@ namespace ProyectoDB2
             richTxtBoxMensajes.ScrollToCaret();
             IrATabMensajes();
         }
-        private void CargarResultadosMock()
-        {
-            DataTable tabla = new DataTable();
-            tabla.Columns.Add("ID", typeof(int));
-            tabla.Columns.Add("NOMBRE", typeof(string));
-            tabla.Columns.Add("FECHA", typeof(DateTime));
-
-            tabla.Rows.Add(1, "Ejemplo 1", DateTime.Now);
-            tabla.Rows.Add(2, "Ejemplo 2", DateTime.Now.AddMinutes(-10));
-            tabla.Rows.Add(3, "Ejemplo 3", DateTime.Now.AddHours(-1));
-
-            dataGridResultados.DataSource = tabla;
-            tabResultados.SelectedTab = tpResultados;
-        }
 
         private void MostrarResultados(DataTable tabla)
         {
             if (tabla == null || tabla.Rows.Count == 0)
             {
-                // D) No hay resultados
-                dataGridResultados.DataSource = null; // opcional, para que no se vea data vieja
+                dataGridResultados.DataSource = null;
                 EscribirMensaje("La consulta no devolvió resultados.");
                 return;
             }
 
-            // C) Sí hay resultados
             dataGridResultados.DataSource = tabla;
-            IrATabResultados();
+            tabResultados.SelectedTab = tpResultados;
         }
 
         private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
@@ -475,5 +508,17 @@ namespace ProyectoDB2
             tabResultados.SelectedTab = tpResultados;
         }
 
+        private void PaginaPrincipal_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void richTxtBoxSQL_TextChanged(object sender, EventArgs e)
+        {
+            if (modoActual == ModoEditor.SQL)
+            {
+                sqlActual = richTxtBoxSQL.Text;
+            }
+        }
     }
 }
