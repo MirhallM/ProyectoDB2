@@ -28,9 +28,17 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PaginaPrincipal));
             splitContainer1 = new SplitContainer();
+            panel1 = new Panel();
+            label1 = new Label();
             treeView1 = new TreeView();
+            menuTreeView = new ContextMenuStrip(components);
+            verDDLToolStripMenuItem = new ToolStripMenuItem();
+            exportarDDLToolStripMenuItem = new ToolStripMenuItem();
+            selectToolStripMenuItem = new ToolStripMenuItem();
+            crearToolStripMenuItem = new ToolStripMenuItem();
             splitContSQLDDL = new SplitContainer();
             pnlSQL = new Panel();
             richTxtBoxSQL = new RichTextBox();
@@ -43,16 +51,18 @@
             dataGridResultados = new DataGridView();
             tpMensajes = new TabPage();
             richTxtBoxMensajes = new RichTextBox();
+            toolStrip1 = new ToolStrip();
             toolTipEjecutar = new ToolStripButton();
+            toolTipNuevoQuery = new ToolStripButton();
             toolTipLimpiar = new ToolStripButton();
             toolStripSeparator1 = new ToolStripSeparator();
             toolTipExport = new ToolStripButton();
-            toolTipNuevoQuery = new ToolStripButton();
-            toolStrip1 = new ToolStrip();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
+            panel1.SuspendLayout();
+            menuTreeView.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContSQLDDL).BeginInit();
             splitContSQLDDL.Panel1.SuspendLayout();
             splitContSQLDDL.Panel2.SuspendLayout();
@@ -76,6 +86,7 @@
             // 
             // splitContainer1.Panel1
             // 
+            splitContainer1.Panel1.Controls.Add(panel1);
             splitContainer1.Panel1.Controls.Add(treeView1);
             splitContainer1.Panel1MinSize = 250;
             // 
@@ -88,13 +99,70 @@
             splitContainer1.SplitterDistance = 250;
             splitContainer1.TabIndex = 0;
             // 
+            // panel1
+            // 
+            panel1.BackColor = SystemColors.ControlLight;
+            panel1.BorderStyle = BorderStyle.FixedSingle;
+            panel1.Controls.Add(label1);
+            panel1.Dock = DockStyle.Top;
+            panel1.Location = new Point(0, 0);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(250, 32);
+            panel1.TabIndex = 1;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.Location = new Point(8, 8);
+            label1.Name = "label1";
+            label1.Size = new Size(68, 15);
+            label1.TabIndex = 0;
+            label1.Text = "Navegador";
+            // 
             // treeView1
             // 
-            treeView1.Dock = DockStyle.Fill;
-            treeView1.Location = new Point(0, 0);
+            treeView1.ContextMenuStrip = menuTreeView;
+            treeView1.Location = new Point(0, 38);
             treeView1.Name = "treeView1";
-            treeView1.Size = new Size(250, 681);
+            treeView1.Size = new Size(250, 643);
             treeView1.TabIndex = 0;
+            treeView1.NodeMouseClick += treeView1_NodeMouseClick;
+            treeView1.NodeMouseDoubleClick += treeView1_NodeMouseDoubleClick;
+            // 
+            // menuTreeView
+            // 
+            menuTreeView.Items.AddRange(new ToolStripItem[] { verDDLToolStripMenuItem, exportarDDLToolStripMenuItem, selectToolStripMenuItem, crearToolStripMenuItem });
+            menuTreeView.Name = "menuTreeView";
+            menuTreeView.Size = new Size(176, 92);
+            menuTreeView.Opening += menuTreeView_Opening;
+            // 
+            // verDDLToolStripMenuItem
+            // 
+            verDDLToolStripMenuItem.Name = "verDDLToolStripMenuItem";
+            verDDLToolStripMenuItem.Size = new Size(175, 22);
+            verDDLToolStripMenuItem.Text = "Ver DDL";
+            verDDLToolStripMenuItem.Click += verDDLToolStripMenuItem_Click;
+            // 
+            // exportarDDLToolStripMenuItem
+            // 
+            exportarDDLToolStripMenuItem.Name = "exportarDDLToolStripMenuItem";
+            exportarDDLToolStripMenuItem.Size = new Size(175, 22);
+            exportarDDLToolStripMenuItem.Text = "Exportar DDL a SQL";
+            exportarDDLToolStripMenuItem.Click += exportarDDLToolStripMenuItem_Click;
+            // 
+            // selectToolStripMenuItem
+            // 
+            selectToolStripMenuItem.Name = "selectToolStripMenuItem";
+            selectToolStripMenuItem.Size = new Size(175, 22);
+            selectToolStripMenuItem.Text = "Select * (Top 100))";
+            selectToolStripMenuItem.Click += selectToolStripMenuItem_Click;
+            // 
+            // crearToolStripMenuItem
+            // 
+            crearToolStripMenuItem.Name = "crearToolStripMenuItem";
+            crearToolStripMenuItem.Size = new Size(175, 22);
+            crearToolStripMenuItem.Text = "Crear...";
             // 
             // splitContSQLDDL
             // 
@@ -166,6 +234,7 @@
             btnSQL.TabIndex = 0;
             btnSQL.Text = "SQL";
             btnSQL.UseVisualStyleBackColor = true;
+            btnSQL.Click += btnSQL_Click;
             // 
             // btnDDL
             // 
@@ -177,6 +246,7 @@
             btnDDL.TabIndex = 1;
             btnDDL.Text = "DDL";
             btnDDL.UseVisualStyleBackColor = true;
+            btnDDL.Click += btnDDL_Click;
             // 
             // tabResultados
             // 
@@ -235,6 +305,15 @@
             richTxtBoxMensajes.TabIndex = 0;
             richTxtBoxMensajes.Text = "";
             // 
+            // toolStrip1
+            // 
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolTipEjecutar, toolTipNuevoQuery, toolTipLimpiar, toolStripSeparator1, toolTipExport });
+            toolStrip1.Location = new Point(0, 0);
+            toolStrip1.Name = "toolStrip1";
+            toolStrip1.Size = new Size(1010, 25);
+            toolStrip1.TabIndex = 1;
+            toolStrip1.Text = "toolStrip1";
+            // 
             // toolTipEjecutar
             // 
             toolTipEjecutar.DisplayStyle = ToolStripItemDisplayStyle.Text;
@@ -243,6 +322,17 @@
             toolTipEjecutar.Name = "toolTipEjecutar";
             toolTipEjecutar.Size = new Size(53, 22);
             toolTipEjecutar.Text = "Ejecutar";
+            toolTipEjecutar.Click += toolTipEjecutar_Click;
+            // 
+            // toolTipNuevoQuery
+            // 
+            toolTipNuevoQuery.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolTipNuevoQuery.Image = (Image)resources.GetObject("toolTipNuevoQuery.Image");
+            toolTipNuevoQuery.ImageTransparentColor = Color.Magenta;
+            toolTipNuevoQuery.Name = "toolTipNuevoQuery";
+            toolTipNuevoQuery.Size = new Size(81, 22);
+            toolTipNuevoQuery.Text = "Nuevo Query";
+            toolTipNuevoQuery.Click += toolTipNuevoQuery_Click;
             // 
             // toolTipLimpiar
             // 
@@ -250,8 +340,9 @@
             toolTipLimpiar.Image = (Image)resources.GetObject("toolTipLimpiar.Image");
             toolTipLimpiar.ImageTransparentColor = Color.Magenta;
             toolTipLimpiar.Name = "toolTipLimpiar";
-            toolTipLimpiar.Size = new Size(51, 22);
-            toolTipLimpiar.Text = "Limpiar";
+            toolTipLimpiar.Size = new Size(85, 22);
+            toolTipLimpiar.Text = "Limpiar Salida";
+            toolTipLimpiar.Click += toolTipLimpiar_Click;
             // 
             // toolStripSeparator1
             // 
@@ -266,24 +357,7 @@
             toolTipExport.Name = "toolTipExport";
             toolTipExport.Size = new Size(112, 22);
             toolTipExport.Text = "Exportar DDL a SQL";
-            // 
-            // toolTipNuevoQuery
-            // 
-            toolTipNuevoQuery.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolTipNuevoQuery.Image = (Image)resources.GetObject("toolTipNuevoQuery.Image");
-            toolTipNuevoQuery.ImageTransparentColor = Color.Magenta;
-            toolTipNuevoQuery.Name = "toolTipNuevoQuery";
-            toolTipNuevoQuery.Size = new Size(81, 22);
-            toolTipNuevoQuery.Text = "Nuevo Query";
-            // 
-            // toolStrip1
-            // 
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolTipEjecutar, toolTipLimpiar, toolStripSeparator1, toolTipExport, toolTipNuevoQuery });
-            toolStrip1.Location = new Point(0, 0);
-            toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(1010, 25);
-            toolStrip1.TabIndex = 1;
-            toolStrip1.Text = "toolStrip1";
+            toolTipExport.Click += toolTipExport_Click;
             // 
             // PaginaPrincipal
             // 
@@ -299,6 +373,9 @@
             splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
+            menuTreeView.ResumeLayout(false);
             splitContSQLDDL.Panel1.ResumeLayout(false);
             splitContSQLDDL.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContSQLDDL).EndInit();
@@ -338,5 +415,12 @@
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripButton toolTipExport;
         private ToolStripButton toolTipNuevoQuery;
+        private ContextMenuStrip menuTreeView;
+        private ToolStripMenuItem verDDLToolStripMenuItem;
+        private ToolStripMenuItem exportarDDLToolStripMenuItem;
+        private ToolStripMenuItem selectToolStripMenuItem;
+        private ToolStripMenuItem crearToolStripMenuItem;
+        private Panel panel1;
+        private Label label1;
     }
 }
