@@ -31,7 +31,6 @@
             splitContainer1 = new SplitContainer();
             PanelBotones = new FlowLayoutPanel();
             btnNueva = new Button();
-            btnEditar = new Button();
             btnEliminar = new Button();
             listaConexiones = new ListBox();
             TitlePanel = new Panel();
@@ -92,7 +91,6 @@
             // 
             PanelBotones.BorderStyle = BorderStyle.FixedSingle;
             PanelBotones.Controls.Add(btnNueva);
-            PanelBotones.Controls.Add(btnEditar);
             PanelBotones.Controls.Add(btnEliminar);
             PanelBotones.Dock = DockStyle.Bottom;
             PanelBotones.FlowDirection = FlowDirection.TopDown;
@@ -110,24 +108,17 @@
             btnNueva.TabIndex = 0;
             btnNueva.Text = "Nueva";
             btnNueva.UseVisualStyleBackColor = true;
-            // 
-            // btnEditar
-            // 
-            btnEditar.Location = new Point(13, 42);
-            btnEditar.Name = "btnEditar";
-            btnEditar.Size = new Size(240, 23);
-            btnEditar.TabIndex = 1;
-            btnEditar.Text = "Editar";
-            btnEditar.UseVisualStyleBackColor = true;
+            btnNueva.Click += btnNueva_Click;
             // 
             // btnEliminar
             // 
-            btnEliminar.Location = new Point(13, 71);
+            btnEliminar.Location = new Point(13, 42);
             btnEliminar.Name = "btnEliminar";
             btnEliminar.Size = new Size(240, 23);
             btnEliminar.TabIndex = 2;
             btnEliminar.Text = "Eliminar";
             btnEliminar.UseVisualStyleBackColor = true;
+            btnEliminar.Click += btnEliminar_Click;
             // 
             // listaConexiones
             // 
@@ -138,6 +129,7 @@
             listaConexiones.Name = "listaConexiones";
             listaConexiones.Size = new Size(266, 336);
             listaConexiones.TabIndex = 1;
+            listaConexiones.SelectedIndexChanged += listaConexiones_SelectedIndexChanged;
             // 
             // TitlePanel
             // 
@@ -384,6 +376,7 @@
             Controls.Add(splitContainer1);
             Name = "Login";
             Text = "Gestor DB2";
+            Load += Login_Load;
             splitContainer1.Panel1.ResumeLayout(false);
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
@@ -406,7 +399,6 @@
         private ListBox listaConexiones;
         private Panel TitlePanel;
         private Button btnNueva;
-        private Button btnEditar;
         private Button btnEliminar;
         private Label lblTitulo;
         private Panel pnlTitulo2;
