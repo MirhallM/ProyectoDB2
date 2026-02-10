@@ -2,44 +2,47 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using ProyectoDB2.Modelos;
 
 namespace ProyectoDB2
 {
     public partial class PaginaPrincipal : Form
     {
-        private GestorConexionDb2? gestorConexion;
+        private readonly GestorConexionDb2? gestorConexion;
+        private readonly GestorMetadatosDb2? gestorMetadatos;
 
         public PaginaPrincipal()
         {
             InitializeComponent();
         }
+
         public PaginaPrincipal(GestorConexionDb2 gestor)
         {
             InitializeComponent();
             gestorConexion = gestor;
+            gestorMetadatos = new GestorMetadatosDb2(gestor);
         }
-
 
         private void PaginaPrincipal_Load(object sender, EventArgs e)
         {
             AplicarModoEditor(ModoEditor.SQL);
 
-            if (gestorConexion == null)
+            if (gestorConexion == null || gestorMetadatos == null)
             {
                 EscribirMensaje("No hay conexión activa a DB2. Regresa al login.");
                 return;
             }
 
-            // Temporal
-            ConstruirArbolMock();
-
-            // Próximo paso:
-            // ConstruirArbolDesdeDB2();
+            try
+            {
+                gestorMetadatos.ConstruirArbol(treeView1, EscribirMensaje);
+            }
+            catch (Exception ex)
+            {
+                EscribirMensaje("Error al construir el árbol: " + ex.Message);
+            }
         }
 
         private enum ModoEditor
@@ -50,185 +53,34 @@ namespace ProyectoDB2
 
         private ModoEditor modoActual = ModoEditor.SQL;
 
-        // Guardamos el último DDL generado para poder volver a él con el botón DDL
         private string ultimoDDLGenerado = "Selecciona una tabla o vista para ver su DDL.";
-
         private string sqlActual = "";
-
 
         private void AplicarModoEditor(ModoEditor modo)
         {
-            // Antes de cambiar de modo, guardamos lo que el usuario estaba escribiendo
+            // Guardar lo que el usuario escribía en SQL antes de cambiar
             if (modoActual == ModoEditor.SQL)
-            {
                 sqlActual = richTxtBoxSQL.Text;
-            }
 
             modoActual = modo;
 
             if (modo == ModoEditor.SQL)
             {
                 richTxtBoxSQL.ReadOnly = false;
-
-                // Mostrar el SQL que el usuario llevaba (o vacío si nunca escribió)
                 richTxtBoxSQL.Text = sqlActual;
-
-                // Para que se note el cambio
                 richTxtBoxSQL.Focus();
                 richTxtBoxSQL.SelectionStart = richTxtBoxSQL.TextLength;
             }
-            else // DDL
+            else
             {
                 richTxtBoxSQL.ReadOnly = true;
-
-                // Mostrar el último DDL generado
                 richTxtBoxSQL.Text = ultimoDDLGenerado;
-
                 richTxtBoxSQL.Focus();
                 richTxtBoxSQL.SelectionStart = 0;
             }
+
             ActualizarEstadoBotonesModo();
-
             toolTipEjecutar.Enabled = (modoActual == ModoEditor.SQL);
-        }
-
-
-
-        // PASO 1: Construir el TreeView con estructura mock
-        private void ConstruirArbolMock()
-        {
-            treeView1.BeginUpdate();
-            try
-            {
-                treeView1.Nodes.Clear();
-
-                // Raíz
-                TreeNode nodoConexiones = CrearNodo(
-                    "Conexiones",
-                    new InfoNodoBD { Tipo = TipoObjetoBD.Carpeta, Nombre = "Conexiones" }
-                );
-
-                // Conexión
-                TreeNode nodoConexion = CrearNodo(
-                    "DB2_Local",
-                    new InfoNodoBD { Tipo = TipoObjetoBD.Conexion, Nombre = "DB2_Local" }
-                );
-
-                // Bases de datos
-                TreeNode nodoBasesDatos = CrearNodo(
-                    "Bases de Datos",
-                    new InfoNodoBD { Tipo = TipoObjetoBD.Carpeta, Nombre = "Bases de Datos" }
-                );
-
-                // Base de datos
-                TreeNode nodoBase = CrearNodo(
-                    "SAMPLE",
-                    new InfoNodoBD { Tipo = TipoObjetoBD.BaseDeDatos, Nombre = "SAMPLE" }
-                );
-
-                // Esquemas
-                TreeNode nodoEsquemas = CrearNodo(
-                    "Esquemas",
-                    new InfoNodoBD { Tipo = TipoObjetoBD.Carpeta, Nombre = "Esquemas" }
-                );
-
-                // Esquema
-                TreeNode nodoEsquema = CrearNodo(
-                    "DB2INST1",
-                    new InfoNodoBD { Tipo = TipoObjetoBD.Esquema, Nombre = "DB2INST1" }
-                );
-
-                // Tablas
-                TreeNode nodoTablas = CrearNodo(
-                    "Tablas",
-                    new InfoNodoBD { Tipo = TipoObjetoBD.Carpeta, Nombre = "Tablas", Esquema = "DB2INST1" }
-                );
-                nodoTablas.Nodes.Add(CrearNodo("EMPLOYEE", new InfoNodoBD { Tipo = TipoObjetoBD.Tabla, Nombre = "EMPLOYEE", Esquema = "DB2INST1" }));
-                nodoTablas.Nodes.Add(CrearNodo("DEPARTMENT", new InfoNodoBD { Tipo = TipoObjetoBD.Tabla, Nombre = "DEPARTMENT", Esquema = "DB2INST1" }));
-
-                // Vistas
-                TreeNode nodoVistas = CrearNodo(
-                    "Vistas",
-                    new InfoNodoBD { Tipo = TipoObjetoBD.Carpeta, Nombre = "Vistas", Esquema = "DB2INST1" }
-                );
-                nodoVistas.Nodes.Add(CrearNodo("V_EMPLOYEE", new InfoNodoBD { Tipo = TipoObjetoBD.Vista, Nombre = "V_EMPLOYEE", Esquema = "DB2INST1" }));
-
-                // Otros objetos (carpetas vacías por ahora)
-                TreeNode nodoProcedimientos = CrearNodo("Procedimientos", new InfoNodoBD { Tipo = TipoObjetoBD.Carpeta, Nombre = "Procedimientos", Esquema = "DB2INST1" });
-                TreeNode nodoFunciones = CrearNodo("Funciones", new InfoNodoBD { Tipo = TipoObjetoBD.Carpeta, Nombre = "Funciones", Esquema = "DB2INST1" });
-                TreeNode nodoTriggers = CrearNodo("Triggers", new InfoNodoBD { Tipo = TipoObjetoBD.Carpeta, Nombre = "Triggers", Esquema = "DB2INST1" });
-                TreeNode nodoIndices = CrearNodo("Índices", new InfoNodoBD { Tipo = TipoObjetoBD.Carpeta, Nombre = "Índices", Esquema = "DB2INST1" });
-                TreeNode nodoSecuencias = CrearNodo("Secuencias", new InfoNodoBD { Tipo = TipoObjetoBD.Carpeta, Nombre = "Secuencias", Esquema = "DB2INST1" });
-                TreeNode nodoPaquetes = CrearNodo("Paquetes", new InfoNodoBD { Tipo = TipoObjetoBD.Carpeta, Nombre = "Paquetes", Esquema = "DB2INST1" });
-                TreeNode nodoTablespaces = CrearNodo("Tablespaces", new InfoNodoBD { Tipo = TipoObjetoBD.Carpeta, Nombre = "Tablespaces", Esquema = "DB2INST1" });
-                TreeNode nodoUsuarios = CrearNodo("Usuarios", new InfoNodoBD { Tipo = TipoObjetoBD.Carpeta, Nombre = "Usuarios", Esquema = "DB2INST1" });
-
-                // Ensamble dentro del esquema
-                nodoEsquema.Nodes.Add(nodoTablas);
-                nodoEsquema.Nodes.Add(nodoVistas);
-                nodoEsquema.Nodes.Add(nodoProcedimientos);
-                nodoEsquema.Nodes.Add(nodoFunciones);
-                nodoEsquema.Nodes.Add(nodoTriggers);
-                nodoEsquema.Nodes.Add(nodoIndices);
-                nodoEsquema.Nodes.Add(nodoSecuencias);
-                nodoEsquema.Nodes.Add(nodoPaquetes);
-                nodoEsquema.Nodes.Add(nodoTablespaces);
-                nodoEsquema.Nodes.Add(nodoUsuarios);
-
-                // Ensamble final del árbol
-                nodoEsquemas.Nodes.Add(nodoEsquema);
-                nodoBase.Nodes.Add(nodoEsquemas);
-                nodoBasesDatos.Nodes.Add(nodoBase);
-                nodoConexion.Nodes.Add(nodoBasesDatos);
-                nodoConexiones.Nodes.Add(nodoConexion);
-
-                treeView1.Nodes.Add(nodoConexiones);
-
-                // Expand inicial (para que se vea listo)
-                nodoConexiones.Expand();
-                nodoConexion.Expand();
-                nodoBasesDatos.Expand();
-                nodoBase.Expand();
-                nodoEsquemas.Expand();
-                nodoEsquema.Expand();
-            }
-            finally
-            {
-                treeView1.EndUpdate();
-            }
-        }
-
-        private TreeNode CrearNodo(string texto, InfoNodoBD info)
-        {
-            TreeNode nodo = new TreeNode(texto);
-            nodo.Tag = info;
-            return nodo;
-        }
-
-        // Info mínima guardada en Tag (PASO 1)
-        private enum TipoObjetoBD
-        {
-            Carpeta,
-            Conexion,
-            BaseDeDatos,
-            Esquema,
-            Tabla,
-            Vista,
-            Procedimiento,
-            Funcion,
-            Trigger,
-            Indice,
-            Secuencia,
-            Paquete,
-            Tablespace,
-            Usuario
-        }
-
-        private class InfoNodoBD
-        {
-            public TipoObjetoBD Tipo { get; set; }
-            public string Nombre { get; set; } = string.Empty;
-            public string Esquema { get; set; } = string.Empty;
         }
 
         private void MostrarDDL(string ddl)
@@ -236,6 +88,7 @@ namespace ProyectoDB2
             ultimoDDLGenerado = ddl;
             AplicarModoEditor(ModoEditor.DDL);
         }
+
         private void ActualizarEstadoBotonesModo()
         {
             if (modoActual == ModoEditor.SQL)
@@ -243,19 +96,29 @@ namespace ProyectoDB2
                 btnSQL.Enabled = false;
                 btnDDL.Enabled = true;
             }
-            else // DDL
+            else
             {
                 btnSQL.Enabled = true;
                 btnDDL.Enabled = false;
             }
         }
+
+        private void btnSQL_Click(object sender, EventArgs e) => AplicarModoEditor(ModoEditor.SQL);
+        private void btnDDL_Click(object sender, EventArgs e) => AplicarModoEditor(ModoEditor.DDL);
+
+        private void richTxtBoxSQL_TextChanged(object sender, EventArgs e)
+        {
+            if (modoActual == ModoEditor.SQL)
+                sqlActual = richTxtBoxSQL.Text;
+        }
+
+
         private bool EsConsultaSelect(string sql)
         {
             if (string.IsNullOrWhiteSpace(sql)) return false;
 
             string s = sql.TrimStart();
 
-            // Saltar comentarios al inicio (opcional pero útil)
             while (s.StartsWith("--"))
             {
                 int salto = s.IndexOf('\n');
@@ -265,42 +128,6 @@ namespace ProyectoDB2
 
             return s.StartsWith("select", StringComparison.OrdinalIgnoreCase)
                 || s.StartsWith("with", StringComparison.OrdinalIgnoreCase);
-        }
-
-
-        private string GenerarDDLMOCK_Tabla(string esquema, string nombreTabla)
-        {
-            if (string.IsNullOrWhiteSpace(esquema)) esquema = "DB2INST1";
-            if (string.IsNullOrWhiteSpace(nombreTabla)) nombreTabla = "TABLA";
-
-            return
-                    $@"CREATE TABLE {esquema}.{nombreTabla} (
-                ID INT NOT NULL,
-                NOMBRE VARCHAR(100),
-                FECHA_CREACION TIMESTAMP,
-                PRIMARY KEY (ID)
-            );";
-        }
-
-        private string GenerarDDLMOCK_Vista(string esquema, string nombreVista)
-        {
-            if (string.IsNullOrWhiteSpace(esquema)) esquema = "DB2INST1";
-            if (string.IsNullOrWhiteSpace(nombreVista)) nombreVista = "VISTA";
-
-            return
-                $@"CREATE VIEW {esquema}.{nombreVista} AS
-                SELECT *
-                FROM {esquema}.EMPLOYEE;";
-        }
-
-        private void btnSQL_Click(object sender, EventArgs e)
-        {
-            AplicarModoEditor(ModoEditor.SQL);
-        }
-
-        private void btnDDL_Click(object sender, EventArgs e)
-        {
-            AplicarModoEditor(ModoEditor.DDL);
         }
 
         private void toolTipEjecutar_Click(object sender, EventArgs e)
@@ -363,7 +190,6 @@ namespace ProyectoDB2
 
             sqlActual = ultimoDDLGenerado;
             AplicarModoEditor(ModoEditor.SQL);
-
             EscribirMensaje("DDL exportado al editor SQL.");
         }
 
@@ -372,16 +198,9 @@ namespace ProyectoDB2
             sqlActual = "";
             AplicarModoEditor(ModoEditor.SQL);
             richTxtBoxSQL.Clear();
-
             EscribirMensaje("Nuevo query iniciado.");
         }
 
-        private void EscribirMensaje(string texto)
-        {
-            richTxtBoxMensajes.AppendText($"[{DateTime.Now:HH:mm:ss}] {texto}\n");
-            richTxtBoxMensajes.ScrollToCaret();
-            IrATabMensajes();
-        }
 
         private void MostrarResultados(DataTable tabla)
         {
@@ -396,12 +215,18 @@ namespace ProyectoDB2
             tabResultados.SelectedTab = tpResultados;
         }
 
+        private void EscribirMensaje(string texto)
+        {
+            richTxtBoxMensajes.AppendText($"[{DateTime.Now:HH:mm:ss}] {texto}\n");
+            richTxtBoxMensajes.ScrollToCaret();
+            tabResultados.SelectedTab = tpMensajes;
+        }
+
+
         private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
-            {
                 treeView1.SelectedNode = e.Node;
-            }
         }
 
         private void menuTreeView_Opening(object sender, CancelEventArgs e)
@@ -409,7 +234,6 @@ namespace ProyectoDB2
             TreeNode nodo = treeView1.SelectedNode;
             if (nodo == null || nodo.Tag is not InfoNodoBD info)
             {
-                // Nada seleccionado o sin info: cancelar el menú
                 e.Cancel = true;
                 return;
             }
@@ -417,61 +241,51 @@ namespace ProyectoDB2
             bool esTabla = info.Tipo == TipoObjetoBD.Tabla;
             bool esVista = info.Tipo == TipoObjetoBD.Vista;
 
-            // Ver DDL y Exportar solo si es tabla o vista
             verDDLToolStripMenuItem.Enabled = esTabla || esVista;
             exportarDDLToolStripMenuItem.Enabled = esTabla || esVista;
-
-            // Select *: solo para tabla o vista (lo dejamos en ambos)
             selectToolStripMenuItem.Enabled = esTabla || esVista;
 
-            // Crear: por ahora solo lo habilitamos en carpetas relevantes (opcional)
-            // Si no querés aún, déjalo deshabilitado siempre:
             crearToolStripMenuItem.Enabled = false;
         }
 
         private void verDDLToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (gestorMetadatos == null) return;
             if (treeView1.SelectedNode?.Tag is not InfoNodoBD info) return;
 
             if (info.Tipo == TipoObjetoBD.Tabla)
-            {
-                MostrarDDL(GenerarDDLMOCK_Tabla(info.Esquema, info.Nombre));
-            }
+                MostrarDDL(gestorMetadatos.ObtenerDDLTabla(info.Esquema, info.Nombre));
             else if (info.Tipo == TipoObjetoBD.Vista)
-            {
-                MostrarDDL(GenerarDDLMOCK_Vista(info.Esquema, info.Nombre));
-            }
+                MostrarDDL(gestorMetadatos.ObtenerDDLVista(info.Esquema, info.Nombre));
         }
 
         private void exportarDDLToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (gestorMetadatos == null) return;
             if (treeView1.SelectedNode?.Tag is not InfoNodoBD info) return;
 
-            // Generar DDL del nodo seleccionado
             string ddl = "";
 
             if (info.Tipo == TipoObjetoBD.Tabla)
-                ddl = GenerarDDLMOCK_Tabla(info.Esquema, info.Nombre);
+                ddl = gestorMetadatos.ObtenerDDLTabla(info.Esquema, info.Nombre);
             else if (info.Tipo == TipoObjetoBD.Vista)
-                ddl = GenerarDDLMOCK_Vista(info.Esquema, info.Nombre);
+                ddl = gestorMetadatos.ObtenerDDLVista(info.Esquema, info.Nombre);
 
             if (string.IsNullOrWhiteSpace(ddl)) return;
 
             ultimoDDLGenerado = ddl;
             sqlActual = ddl;
             AplicarModoEditor(ModoEditor.SQL);
-
             EscribirMensaje("DDL exportado al editor SQL.");
         }
 
         private void selectToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (treeView1.SelectedNode?.Tag is not InfoNodoBD info) return;
-
             if (info.Tipo != TipoObjetoBD.Tabla && info.Tipo != TipoObjetoBD.Vista) return;
 
-            string esquema = string.IsNullOrWhiteSpace(info.Esquema) ? "DB2INST1" : info.Esquema;
-            string nombre = info.Nombre;
+            string esquema = string.IsNullOrWhiteSpace(info.Esquema) ? "DB2INST1" : info.Esquema.Trim();
+            string nombre = info.Nombre.Trim();
 
             sqlActual = $"SELECT * FROM {esquema}.{nombre} FETCH FIRST 100 ROWS ONLY;";
             AplicarModoEditor(ModoEditor.SQL);
@@ -482,30 +296,20 @@ namespace ProyectoDB2
         private void treeView1_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             if (e.Button != MouseButtons.Left) return;
-            if (e.Node == null) return;
-
-            if (e.Node.Tag is not InfoNodoBD info) return;
+            if (e.Node?.Tag is not InfoNodoBD info) return;
+            if (gestorMetadatos == null) return;
 
             if (info.Tipo == TipoObjetoBD.Tabla)
             {
-                MostrarDDL(GenerarDDLMOCK_Tabla(info.Esquema, info.Nombre));
+                MostrarDDL(gestorMetadatos.ObtenerDDLTabla(info.Esquema, info.Nombre));
                 return;
             }
 
             if (info.Tipo == TipoObjetoBD.Vista)
             {
-                MostrarDDL(GenerarDDLMOCK_Vista(info.Esquema, info.Nombre));
+                MostrarDDL(gestorMetadatos.ObtenerDDLVista(info.Esquema, info.Nombre));
                 return;
             }
-        }
-        private void IrATabMensajes()
-        {
-            tabResultados.SelectedTab = tpMensajes;
-        }
-
-        private void IrATabResultados()
-        {
-            tabResultados.SelectedTab = tpResultados;
         }
 
         private void PaginaPrincipal_FormClosed(object sender, FormClosedEventArgs e)
@@ -513,12 +317,25 @@ namespace ProyectoDB2
             Application.Exit();
         }
 
-        private void richTxtBoxSQL_TextChanged(object sender, EventArgs e)
+        private void toolTipRefrescar_Click(object sender, EventArgs e)
         {
-            if (modoActual == ModoEditor.SQL)
+            if (gestorConexion == null || gestorMetadatos == null)
             {
-                sqlActual = richTxtBoxSQL.Text;
+                EscribirMensaje("No hay conexión activa. No se puede refrescar el navegador.");
+                return;
             }
+
+            try
+            {
+                gestorMetadatos.ConstruirArbol(treeView1, EscribirMensaje);
+                EscribirMensaje("Navegador actualizado.");
+            }
+            catch (Exception ex)
+            {
+                EscribirMensaje("Error al refrescar el navegador: " + ex.Message);
+            }
+
         }
+
     }
 }

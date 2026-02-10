@@ -57,6 +57,7 @@
             toolTipLimpiar = new ToolStripButton();
             toolStripSeparator1 = new ToolStripSeparator();
             toolTipExport = new ToolStripButton();
+            toolTipRefrescar = new ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -86,8 +87,8 @@
             // 
             // splitContainer1.Panel1
             // 
-            splitContainer1.Panel1.Controls.Add(panel1);
             splitContainer1.Panel1.Controls.Add(treeView1);
+            splitContainer1.Panel1.Controls.Add(panel1);
             splitContainer1.Panel1MinSize = 250;
             // 
             // splitContainer1.Panel2
@@ -123,9 +124,10 @@
             // treeView1
             // 
             treeView1.ContextMenuStrip = menuTreeView;
-            treeView1.Location = new Point(0, 38);
+            treeView1.Dock = DockStyle.Fill;
+            treeView1.Location = new Point(0, 32);
             treeView1.Name = "treeView1";
-            treeView1.Size = new Size(250, 643);
+            treeView1.Size = new Size(250, 649);
             treeView1.TabIndex = 0;
             treeView1.NodeMouseClick += treeView1_NodeMouseClick;
             treeView1.NodeMouseDoubleClick += treeView1_NodeMouseDoubleClick;
@@ -308,7 +310,7 @@
             // 
             // toolStrip1
             // 
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolTipEjecutar, toolTipNuevoQuery, toolTipLimpiar, toolStripSeparator1, toolTipExport });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolTipEjecutar, toolTipNuevoQuery, toolTipLimpiar, toolStripSeparator1, toolTipExport, toolTipRefrescar });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(1010, 25);
@@ -359,6 +361,16 @@
             toolTipExport.Size = new Size(112, 22);
             toolTipExport.Text = "Exportar DDL a SQL";
             toolTipExport.Click += toolTipExport_Click;
+            // 
+            // toolTipRefrescar
+            // 
+            toolTipRefrescar.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolTipRefrescar.Image = (Image)resources.GetObject("toolTipRefrescar.Image");
+            toolTipRefrescar.ImageTransparentColor = Color.Magenta;
+            toolTipRefrescar.Name = "toolTipRefrescar";
+            toolTipRefrescar.Size = new Size(59, 22);
+            toolTipRefrescar.Text = "Refrescar";
+            toolTipRefrescar.Click += toolTipRefrescar_Click;
             // 
             // PaginaPrincipal
             // 
@@ -424,5 +436,6 @@
         private ToolStripMenuItem crearToolStripMenuItem;
         private Panel panel1;
         private Label label1;
+        private ToolStripButton toolTipRefrescar;
     }
 }
