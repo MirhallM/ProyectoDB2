@@ -40,7 +40,6 @@ namespace ProyectoDB2
 
             listaConexiones.DisplayMember = "Nombre";
             listaConexiones.ValueMember = "Nombre";
-            listaConexiones.DataSource = null;
             listaConexiones.DataSource = conexiones;
 
             if (conexiones.Count > 0)
@@ -102,32 +101,6 @@ namespace ProyectoDB2
                 $"Database={baseDatos};" +
                 $"UID={usuario};" +
                 $"PWD={contra};";
-        }
-        private void buttonProbarConexion_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                string cadena = ConstruirCadenaConexion();
-                GestorConexionDb2 gestor = new GestorConexionDb2(cadena);
-
-                gestor.ProbarConexion();
-
-                MessageBox.Show(
-                    "Conexión exitosa a DB2.",
-                    "Conexión OK",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "No se pudo conectar a DB2.\n\n" + ex.Message,
-                    "Error de conexión",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
-            }
         }
 
         private void btnProbarConexion_Click(object sender, EventArgs e)

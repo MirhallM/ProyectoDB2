@@ -257,6 +257,8 @@ namespace ProyectoDB2
                 MostrarDDL(gestorMetadatos.ObtenerDDLTabla(info.Esquema, info.Nombre));
             else if (info.Tipo == TipoObjetoBD.Vista)
                 MostrarDDL(gestorMetadatos.ObtenerDDLVista(info.Esquema, info.Nombre));
+            else if (info.Tipo == TipoObjetoBD.Indice)
+                MostrarDDL(gestorMetadatos.ObtenerDDLIndice(info.Esquema, info.Nombre));
         }
 
         private void exportarDDLToolStripMenuItem_Click(object sender, EventArgs e)
@@ -270,6 +272,8 @@ namespace ProyectoDB2
                 ddl = gestorMetadatos.ObtenerDDLTabla(info.Esquema, info.Nombre);
             else if (info.Tipo == TipoObjetoBD.Vista)
                 ddl = gestorMetadatos.ObtenerDDLVista(info.Esquema, info.Nombre);
+            else if (info.Tipo == TipoObjetoBD.Indice)
+                ddl = gestorMetadatos.ObtenerDDLIndice(info.Esquema, info.Nombre);
 
             if (string.IsNullOrWhiteSpace(ddl)) return;
 
@@ -336,6 +340,5 @@ namespace ProyectoDB2
             }
 
         }
-
     }
 }

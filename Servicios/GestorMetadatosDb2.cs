@@ -282,6 +282,76 @@ namespace ProyectoDB2
             return ddl;
         }
 
+        public string ObtenerDDLIndice(string esquema, string nombreIndice)
+        {
+            if(string.IsNullOrWhiteSpace(esquema) || string.IsNullOrWhiteSpace(nombreIndice))
+                return "-- Esquema o tabla inválidos.";
+
+            string esquemaSql = esquema.Trim().Replace("'", "''");
+            string tablaSql = nombreIndice.Trim().Replace("'", "''");
+
+            string sql = $@"
+                SELECT INDNAME, INDNAME, TABSCHEMA, TABNAME, UNIQUERULE
+                FROM SYSCAT.INDEXES
+                WHERE INDSCHEMA = '{esquemaSql}'
+                  AND INDNAME   = '{nombreIndice}'
+                ORDER BY INDNAME";
+
+            DataTable dtInfo = gestorConexion.EjecutarConsulta(sql);
+
+            if (dtInfo.Rows.Count == 0)
+                return $"-- No se encontró el índice {esquema}.{nombreIndice}";
+
+            DataRow info = dtInfo.Rows[0];
+
+            string tabSchema = (info["TABSCHEMA"]?.ToString() ?? "").Trim();
+            string tabName = (info["TABNAME"]?.ToString() ?? "").Trim();    
+            string uniqueRule = (info["UNIQUERULE"]?.ToString() ?? "").Trim().ToUpperInvariant();
+
+            bool esUnico = uniqueRule == "U";
+
+            if(string.IsNullOrWhiteSpace(tabSchema) || string.IsNullOrWhiteSpace(tabName))
+                return $"-- No se pudo determinar la tabla del índice {esquema}.{nombreIndice}";
+
+            string sqlCols = $@"
+                SELECT COLNAME, COLORDER
+                FROM SYSCAT.INDEXCOLUSE
+                WHERE INDSCHEMA = '{esquemaSql}'
+                  AND INDNAME   = '{nombreIndice}'
+                ORDER BY COLSEQ";
+
+            DataTable dtColumnas = gestorConexion.EjecutarConsulta(sqlCols);
+
+            if (dtColumnas.Rows.Count == 0)
+                return $"-- No se encontraron columnas para el índice {esquema}.{nombreIndice}";
+
+            List<string> columnas = new List<string>();
+
+            foreach (DataRow fila in dtColumnas.Rows)
+            {
+                string col = (fila["COLNAME"]?.ToString() ?? "").Trim();
+                string orden = (fila["COLORDER"]?.ToString() ?? "").Trim().ToUpperInvariant();
+
+                if (string.IsNullOrWhiteSpace(col))
+                {
+                    columnas.Add("Columna no disponible");
+                    continue;
+                }
+
+                if (orden == "D")
+                    columnas.Add($"{col} DESC");
+                else
+                    columnas.Add(col);
+            }
+
+            string listaColumnas = string.Join(", ", columnas);
+
+            string textoUnico = esUnico ? "UNIQUE " : "";
+            string ddl = $"CREATE {textoUnico}INDEX {esquema}.{nombreIndice} ON {tabSchema}.{tabName} ({listaColumnas});";
+
+            return ddl;
+        }
+
         public string ObtenerDDLTabla(string esquema, string nombreTabla)
         {
             if (string.IsNullOrWhiteSpace(esquema) || string.IsNullOrWhiteSpace(nombreTabla))
