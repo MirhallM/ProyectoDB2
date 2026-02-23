@@ -238,12 +238,26 @@ namespace ProyectoDB2
                 return;
             }
 
-            bool esTabla = info.Tipo == TipoObjetoBD.Tabla;
-            bool esVista = info.Tipo == TipoObjetoBD.Vista;
+            bool permiteDDL = info.Tipo switch
+            {
+                TipoObjetoBD.Tabla => true,
+                TipoObjetoBD.Vista => true,
+                TipoObjetoBD.Indice => true,
+                TipoObjetoBD.Secuencia => true,
+                TipoObjetoBD.Trigger => true,
+                _ => false
+            };
 
-            verDDLToolStripMenuItem.Enabled = esTabla || esVista;
-            exportarDDLToolStripMenuItem.Enabled = esTabla || esVista;
-            selectToolStripMenuItem.Enabled = esTabla || esVista;
+            bool permiteSelect = info.Tipo switch
+            {
+                TipoObjetoBD.Tabla => true,
+                TipoObjetoBD.Vista => true,
+                _ => false
+            };
+
+            verDDLToolStripMenuItem.Enabled = permiteDDL;
+            exportarDDLToolStripMenuItem.Enabled = permiteDDL;
+            selectToolStripMenuItem.Enabled = permiteSelect;
 
             crearToolStripMenuItem.Enabled = false;
         }
@@ -253,12 +267,19 @@ namespace ProyectoDB2
             if (gestorMetadatos == null) return;
             if (treeView1.SelectedNode?.Tag is not InfoNodoBD info) return;
 
-            if (info.Tipo == TipoObjetoBD.Tabla)
-                MostrarDDL(gestorMetadatos.ObtenerDDLTabla(info.Esquema, info.Nombre));
-            else if (info.Tipo == TipoObjetoBD.Vista)
-                MostrarDDL(gestorMetadatos.ObtenerDDLVista(info.Esquema, info.Nombre));
-            else if (info.Tipo == TipoObjetoBD.Indice)
-                MostrarDDL(gestorMetadatos.ObtenerDDLIndice(info.Esquema, info.Nombre));
+            string ddl = info.Tipo switch
+            {
+                TipoObjetoBD.Tabla => gestorMetadatos.ObtenerDDLTabla(info.Esquema, info.Nombre),
+                TipoObjetoBD.Vista => gestorMetadatos.ObtenerDDLVista(info.Esquema, info.Nombre),
+                TipoObjetoBD.Indice => gestorMetadatos.ObtenerDDLIndice(info.Esquema, info.Nombre),
+                TipoObjetoBD.Secuencia => gestorMetadatos.ObtenerDDLSecuencia(info.Esquema, info.Nombre),
+                TipoObjetoBD.Trigger => gestorMetadatos.ObtenerDDLTrigger(info.Esquema, info.Nombre),
+                _ => ""
+            };
+
+            if (string.IsNullOrWhiteSpace(ddl)) return;
+
+            MostrarDDL(ddl);
         }
 
         private void exportarDDLToolStripMenuItem_Click(object sender, EventArgs e)
@@ -266,14 +287,15 @@ namespace ProyectoDB2
             if (gestorMetadatos == null) return;
             if (treeView1.SelectedNode?.Tag is not InfoNodoBD info) return;
 
-            string ddl = "";
-
-            if (info.Tipo == TipoObjetoBD.Tabla)
-                ddl = gestorMetadatos.ObtenerDDLTabla(info.Esquema, info.Nombre);
-            else if (info.Tipo == TipoObjetoBD.Vista)
-                ddl = gestorMetadatos.ObtenerDDLVista(info.Esquema, info.Nombre);
-            else if (info.Tipo == TipoObjetoBD.Indice)
-                ddl = gestorMetadatos.ObtenerDDLIndice(info.Esquema, info.Nombre);
+            string ddl = info.Tipo switch
+            {
+                TipoObjetoBD.Tabla => gestorMetadatos.ObtenerDDLTabla(info.Esquema, info.Nombre),
+                TipoObjetoBD.Vista => gestorMetadatos.ObtenerDDLVista(info.Esquema, info.Nombre),
+                TipoObjetoBD.Indice => gestorMetadatos.ObtenerDDLIndice(info.Esquema, info.Nombre),
+                TipoObjetoBD.Secuencia => gestorMetadatos.ObtenerDDLSecuencia(info.Esquema, info.Nombre),
+                TipoObjetoBD.Trigger => gestorMetadatos.ObtenerDDLTrigger(info.Esquema, info.Nombre),
+                _ => ""
+            };
 
             if (string.IsNullOrWhiteSpace(ddl)) return;
 
@@ -303,17 +325,19 @@ namespace ProyectoDB2
             if (e.Node?.Tag is not InfoNodoBD info) return;
             if (gestorMetadatos == null) return;
 
-            if (info.Tipo == TipoObjetoBD.Tabla)
+            string ddl = info.Tipo switch
             {
-                MostrarDDL(gestorMetadatos.ObtenerDDLTabla(info.Esquema, info.Nombre));
-                return;
-            }
+                TipoObjetoBD.Tabla => gestorMetadatos.ObtenerDDLTabla(info.Esquema, info.Nombre),
+                TipoObjetoBD.Vista => gestorMetadatos.ObtenerDDLVista(info.Esquema, info.Nombre),
+                TipoObjetoBD.Indice => gestorMetadatos.ObtenerDDLIndice(info.Esquema, info.Nombre),
+                TipoObjetoBD.Secuencia => gestorMetadatos.ObtenerDDLSecuencia(info.Esquema, info.Nombre),
+                TipoObjetoBD.Trigger => gestorMetadatos.ObtenerDDLTrigger(info.Esquema, info.Nombre),
+                _ => ""
+            };
 
-            if (info.Tipo == TipoObjetoBD.Vista)
-            {
-                MostrarDDL(gestorMetadatos.ObtenerDDLVista(info.Esquema, info.Nombre));
-                return;
-            }
+            if (string.IsNullOrWhiteSpace(ddl)) return;
+
+            MostrarDDL(ddl);
         }
 
         private void PaginaPrincipal_FormClosed(object sender, FormClosedEventArgs e)

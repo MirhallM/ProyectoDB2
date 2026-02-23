@@ -420,6 +420,203 @@ namespace ProyectoDB2
             return ddlFinal;
         }
 
+        public string ObtenerDDLSecuencia(string esquema, string nombreSecuencia)
+        {
+            if (gestorConexion == null) return "No hay conexión activa.";
+
+            esquema = (esquema ?? "").Trim();
+            nombreSecuencia = (nombreSecuencia ?? "").Trim();
+
+            if (string.IsNullOrWhiteSpace(esquema) || string.IsNullOrWhiteSpace(nombreSecuencia))
+                return "-- Esquema o secuencia inválidos.";
+
+            string esq = esquema.Replace("'", "''");
+            string seq = nombreSecuencia.Replace("'", "''");
+
+            DataTable dt = gestorConexion.EjecutarConsulta($@"
+                SELECT SEQTYPE, INCREMENT, START, MINVALUE, MAXVALUE, CACHE, CYCLE, ORDER, PRECISION
+                FROM SYSCAT.SEQUENCES
+                WHERE SEQSCHEMA = '{esq}'
+                  AND SEQNAME   = '{seq}'
+            ");
+
+            if (dt.Rows.Count == 0)
+                return $"-- No se encontró la secuencia {esquema}.{nombreSecuencia}";
+
+            DataRow r = dt.Rows[0];
+
+            string seqType = (r["SEQTYPE"]?.ToString() ?? "").Trim().ToUpperInvariant();
+
+            
+            if (seqType == "A")
+            {
+                return $"-- La secuencia {esquema}.{nombreSecuencia} es un alias. DB2 no expone un DDL completo para alias desde el catálogo.";
+            }
+
+            // Valores 
+            string incremento = (r["INCREMENT"]?.ToString() ?? "").Trim();
+            string inicio = (r["START"]?.ToString() ?? "").Trim();
+            string minValue = (r["MINVALUE"]?.ToString() ?? "").Trim();
+            string maxValue = (r["MAXVALUE"]?.ToString() ?? "").Trim();
+
+            int cache = 0;
+            int.TryParse((r["CACHE"]?.ToString() ?? "0").Trim(), out cache);
+
+            string cycle = (r["CYCLE"]?.ToString() ?? "").Trim().ToUpperInvariant(); // Y/N
+            string order = (r["ORDER"]?.ToString() ?? "").Trim().ToUpperInvariant(); // Y/N
+
+            int precision = 0;
+            int.TryParse((r["PRECISION"]?.ToString() ?? "0").Trim(), out precision);
+
+            string tipo = ObtenerTipoSecuenciaPorPrecision(precision);
+
+            StringBuilder ddl = new StringBuilder();
+
+            ddl.Append($"CREATE SEQUENCE {esquema}.{nombreSecuencia}");
+
+            if (!string.IsNullOrWhiteSpace(tipo))
+                ddl.Append($" AS {tipo}");
+
+            if (!string.IsNullOrWhiteSpace(inicio))
+                ddl.Append($"\n  START WITH {inicio}");
+
+            if (!string.IsNullOrWhiteSpace(incremento))
+                ddl.Append($"\n  INCREMENT BY {incremento}");
+
+            // MIN/MAX
+            if (!string.IsNullOrWhiteSpace(minValue))
+                ddl.Append($"\n  MINVALUE {minValue}");
+            else
+                ddl.Append("\n  NO MINVALUE");
+
+            if (!string.IsNullOrWhiteSpace(maxValue))
+                ddl.Append($"\n  MAXVALUE {maxValue}");
+            else
+                ddl.Append("\n  NO MAXVALUE");
+
+            // CYCLE
+            if (cycle == "Y") ddl.Append("\n  CYCLE");
+            else ddl.Append("\n  NO CYCLE");
+
+            // CACHE: 0 normalmente indica no cache
+            if (cache <= 0) ddl.Append("\n  NO CACHE");
+            else ddl.Append($"\n  CACHE {cache}");
+
+            // ORDER
+            if (order == "Y") ddl.Append("\n  ORDER");
+            else ddl.Append("\n  NO ORDER");
+
+            ddl.Append(";");
+
+            return ddl.ToString();
+        }
+
+        private string ObtenerTipoSecuenciaPorPrecision(int precision)
+        {
+            // Mapeo típico en DB2 LUW: 5=SMALLINT, 10=INTEGER, 19=BIGINT. :contentReference[oaicite:1]{index=1}
+            if (precision == 5) return "SMALLINT";
+            if (precision == 10) return "INTEGER";
+            if (precision == 19) return "BIGINT";
+
+            if (precision > 0) return $"DECIMAL({precision},0)";
+            
+            return "";
+        }
+
+        public string ObtenerDDLTrigger(string esquema, string nombreTrigger)
+        {
+            if (gestorConexion == null) return "No hay conexión activa.";
+
+            esquema = (esquema ?? "").Trim();
+            nombreTrigger = (nombreTrigger ?? "").Trim();
+
+            if (string.IsNullOrWhiteSpace(esquema) || string.IsNullOrWhiteSpace(nombreTrigger))
+                return "-- Esquema o trigger inválido.";
+
+            string esq = esquema.Replace("'", "''");
+            string trg = nombreTrigger.Replace("'", "''");
+
+            // Intentamos traer suficiente metadata por si el TEXT no viene completo
+            DataTable dt = gestorConexion.EjecutarConsulta($@"
+                SELECT TRIGSCHEMA, TRIGNAME, TABSCHEMA, TABNAME,
+                       TRIGTIME, TRIGEVENT, GRANULARITY, TEXT
+                FROM SYSCAT.TRIGGERS
+                WHERE TRIGSCHEMA = '{esq}'
+                  AND TRIGNAME   = '{trg}'
+            ");
+
+            if (dt.Rows.Count == 0)
+                return $"-- No se encontró el trigger {esquema}.{nombreTrigger}";
+
+            DataRow r = dt.Rows[0];
+
+            string tabSchema = (r["TABSCHEMA"]?.ToString() ?? "").Trim();
+            string tabName = (r["TABNAME"]?.ToString() ?? "").Trim();
+
+            string trigTime = (r["TRIGTIME"]?.ToString() ?? "").Trim().ToUpperInvariant();     // B / A / I
+            string trigEvent = (r["TRIGEVENT"]?.ToString() ?? "").Trim().ToUpperInvariant();  // I / U / D
+            string gran = (r["GRANULARITY"]?.ToString() ?? "").Trim().ToUpperInvariant();     // R / S
+
+            string texto = (r["TEXT"]?.ToString() ?? "").Trim();
+
+            if (string.IsNullOrWhiteSpace(texto))
+                return $"-- El trigger {esquema}.{nombreTrigger} no tiene texto disponible en el catálogo.";
+
+            // Caso 1: DB2 ya guarda el CREATE TRIGGER completo en TEXT
+            if (texto.StartsWith("create trigger", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!texto.TrimEnd().EndsWith(";"))
+                    texto += ";";
+                return texto;
+            }
+
+            // Caso 2: TEXT viene parcial, intentamos reconstruir una cabecera simple
+            string tiempoSql = trigTime switch
+            {
+                "B" => "BEFORE",
+                "A" => "AFTER",
+                "I" => "INSTEAD OF",
+                _ => "AFTER"
+            };
+
+            string eventoSql = trigEvent switch
+            {
+                "I" => "INSERT",
+                "U" => "UPDATE",
+                "D" => "DELETE",
+                _ => "INSERT"
+            };
+
+            string granSql = gran switch
+            {
+                "R" => "FOR EACH ROW",
+                "S" => "FOR EACH STATEMENT",
+                _ => "FOR EACH ROW"
+            };
+
+            // Si no se pudo determinar tabla, al menos devolvemos el texto con aviso
+            if (string.IsNullOrWhiteSpace(tabSchema) || string.IsNullOrWhiteSpace(tabName))
+            {
+                StringBuilder ddlParcial = new StringBuilder();
+                ddlParcial.AppendLine($"-- DDL parcial: no se pudo determinar la tabla objetivo del trigger {esquema}.{nombreTrigger}");
+                ddlParcial.AppendLine(texto);
+                if (!ddlParcial.ToString().TrimEnd().EndsWith(";"))
+                    ddlParcial.AppendLine(";");
+                return ddlParcial.ToString();
+            }
+
+            StringBuilder ddl = new StringBuilder();
+            ddl.AppendLine($"CREATE TRIGGER {esquema}.{nombreTrigger}");
+            ddl.AppendLine($"{tiempoSql} {eventoSql} ON {tabSchema}.{tabName}");
+            ddl.AppendLine($"{granSql}");
+            ddl.AppendLine(texto);
+
+            if (!ddl.ToString().TrimEnd().EndsWith(";"))
+                ddl.AppendLine(";");
+
+            return ddl.ToString();
+        }
+
         private string FormatearTipoDB2(string tipo, int longitud, int escala)
         {
             if (string.IsNullOrWhiteSpace(tipo)) return "";
