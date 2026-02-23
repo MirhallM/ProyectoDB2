@@ -43,27 +43,6 @@ namespace ProyectoDB2.Forms
             cbEsquema.SelectedIndex = 0;
         }
 
-        private bool NombreTablaValido(string nombre)
-        {
-            if (string.IsNullOrWhiteSpace(nombre))
-                return false;
-
-            // Regla simple: letras, numeros y _
-            // y que no empiece con numero
-            nombre = nombre.Trim();
-
-            if (char.IsDigit(nombre[0]))
-                return false;
-
-            foreach (char c in nombre)
-            {
-                bool ok = char.IsLetterOrDigit(c) || c == '_';
-                if (!ok) return false;
-            }
-
-            return true;
-        }
-
         private void btnSiguiente_Click(object sender, EventArgs e)
         {
             string esquema = cbEsquema.SelectedItem?.ToString()?.Trim() ?? "";

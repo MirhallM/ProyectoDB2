@@ -435,17 +435,7 @@ namespace ProyectoDB2
 
             string textoNodo = treeView1.SelectedNode.Text.Trim();
 
-            // Solo permitir crear cuando esté en la carpeta "Tablas"
-            if (!textoNodo.Equals("Tablas", StringComparison.OrdinalIgnoreCase))
-            {
-                EscribirMensaje("Para crear una tabla, hacé clic derecho sobre la carpeta 'Tablas'.");
-                return;
-            }
-
-            // Obtener esquema del contexto
             string esquemaContexto = ObtenerEsquemaContexto(treeView1.SelectedNode);
-
-            // Lista de esquemas
             List<string> esquemas = ObtenerEsquemasDesdeTreeView();
 
             if (!string.IsNullOrWhiteSpace(esquemaContexto))
@@ -454,32 +444,89 @@ namespace ProyectoDB2
                 esquemas.Insert(0, esquemaContexto);
             }
 
-            // Abrir Paso 1
+            if (textoNodo.Equals("Tablas", StringComparison.OrdinalIgnoreCase))
+            {
+                AbrirWizardCrearTabla(esquemas);
+                return;
+            }
+
+            if (textoNodo.Equals("Vistas", StringComparison.OrdinalIgnoreCase))
+            {
+                bool flowControl = AbrirWizardCrearVista(esquemaContexto, esquemas);
+                if (!flowControl)
+                {
+                    return;
+                }
+            }
+
+            EscribirMensaje("Para crear, hacé clic derecho sobre la carpeta 'Tablas' o 'Vistas'.");
+        }
+
+        private bool AbrirWizardCrearVista(string esquemaContexto, List<string> esquemas)
+        {
+            using (var paso1Vista = new ProyectoDB2.Forms.CrearVistaPaso1(esquemas, gestorConexion, esquemaContexto))
+            {
+                var res = paso1Vista.ShowDialog(this);
+                if (res != DialogResult.OK) return false;
+
+                using (var paso2Vista = new ProyectoDB2.Forms.CrearVistaPaso2(
+                    gestorConexion,
+                    paso1Vista.EsquemaSeleccionado,
+                    paso1Vista.NombreVista,
+                    paso1Vista.TablaBase))
+                {
+                    var res2 = paso2Vista.ShowDialog(this);
+
+                    // Si querés implementar Atrás, aquí es donde se repite el paso1
+                    if (res2 == DialogResult.Retry)
+                    {
+                        // Si querés, luego lo hacemos bien con un while
+                        return false;
+                    }
+
+                    if (res2 != DialogResult.OK) return false;
+
+                    string ddl = paso2Vista.DdlGenerado;
+
+                    if (string.IsNullOrWhiteSpace(ddl))
+                    {
+                        EscribirMensaje("No se generó el DDL de la vista.");
+                        return false;
+                    }
+
+                    sqlActual = ddl;
+                    AplicarModoEditor(ModoEditor.SQL);
+                    EscribirMensaje("DDL de CREATE VIEW generado por el wizard.");
+                }
+            }
+
+            return true;
+        }
+
+        private void AbrirWizardCrearTabla(List<string> esquemas)
+        {
             using (var paso1 = new ProyectoDB2.Forms.CrearTablaPaso1(esquemas))
             {
-                var resPaso1 = paso1.ShowDialog(this);
-
-                if (resPaso1 != DialogResult.OK)
+                var res = paso1.ShowDialog(this);
+                if (res != DialogResult.OK)
                 {
                     EscribirMensaje("Creación de tabla cancelada.");
                     return;
                 }
 
-                // Si todo salió bien, paso1 ya trae el DDL generado por paso2
                 string ddl = paso1.DdlGenerado;
 
                 if (string.IsNullOrWhiteSpace(ddl))
                 {
-                    EscribirMensaje("No se generó el DDL.");
+                    EscribirMensaje("No se generó el DDL de la tabla.");
                     return;
                 }
 
-                // Mandarlo al editor SQL
                 sqlActual = ddl;
                 AplicarModoEditor(ModoEditor.SQL);
-
                 EscribirMensaje("DDL de CREATE TABLE generado por el wizard.");
             }
         }
+        
     }
 }

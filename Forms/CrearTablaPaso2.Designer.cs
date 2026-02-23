@@ -73,14 +73,15 @@
             pnlBotones.Controls.Add(btnAtras);
             pnlBotones.Controls.Add(btnFinalizar);
             pnlBotones.Controls.Add(btnCancelar);
-            pnlBotones.Location = new Point(414, 267);
+            pnlBotones.Location = new Point(539, 397);
             pnlBotones.Name = "pnlBotones";
-            pnlBotones.Size = new Size(374, 171);
+            pnlBotones.Size = new Size(249, 41);
             pnlBotones.TabIndex = 5;
             // 
             // btnAtras
             // 
-            btnAtras.Location = new Point(134, 145);
+            btnAtras.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnAtras.Location = new Point(9, 15);
             btnAtras.Name = "btnAtras";
             btnAtras.Size = new Size(75, 23);
             btnAtras.TabIndex = 2;
@@ -91,7 +92,7 @@
             // btnFinalizar
             // 
             btnFinalizar.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnFinalizar.Location = new Point(296, 145);
+            btnFinalizar.Location = new Point(171, 15);
             btnFinalizar.Name = "btnFinalizar";
             btnFinalizar.Size = new Size(75, 23);
             btnFinalizar.TabIndex = 1;
@@ -102,7 +103,7 @@
             // btnCancelar
             // 
             btnCancelar.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnCancelar.Location = new Point(215, 145);
+            btnCancelar.Location = new Point(90, 15);
             btnCancelar.Name = "btnCancelar";
             btnCancelar.Size = new Size(75, 23);
             btnCancelar.TabIndex = 0;
