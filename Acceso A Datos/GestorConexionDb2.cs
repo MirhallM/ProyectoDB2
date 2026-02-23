@@ -8,7 +8,7 @@ namespace ProyectoDB2
     {
         private string cadenaConexion;
 
-        // Constructor por defecto (por si aún lo usas en pruebas)
+        // Constructor por defecto para pruebas
         public GestorConexionDb2()
         {
             cadenaConexion =
@@ -18,13 +18,13 @@ namespace ProyectoDB2
                 "PWD=contra;";
         }
 
-        // ✅ Constructor para recibir cadena desde Login
+        
         public GestorConexionDb2(string cadenaConexion)
         {
             this.cadenaConexion = cadenaConexion;
         }
 
-        // ✅ Método para validar conexión
+        
         public void ProbarConexion()
         {
             using (DB2Connection conexion = new DB2Connection(cadenaConexion))
