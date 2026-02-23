@@ -31,14 +31,14 @@
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PaginaPrincipal));
             splitContainer1 = new SplitContainer();
-            panel1 = new Panel();
-            label1 = new Label();
             treeView1 = new TreeView();
             menuTreeView = new ContextMenuStrip(components);
             verDDLToolStripMenuItem = new ToolStripMenuItem();
             exportarDDLToolStripMenuItem = new ToolStripMenuItem();
             selectToolStripMenuItem = new ToolStripMenuItem();
             crearToolStripMenuItem = new ToolStripMenuItem();
+            panel1 = new Panel();
+            label1 = new Label();
             splitContSQLDDL = new SplitContainer();
             pnlSQL = new Panel();
             richTxtBoxSQL = new RichTextBox();
@@ -62,8 +62,8 @@
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
-            panel1.SuspendLayout();
             menuTreeView.SuspendLayout();
+            panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContSQLDDL).BeginInit();
             splitContSQLDDL.Panel1.SuspendLayout();
             splitContSQLDDL.Panel2.SuspendLayout();
@@ -100,6 +100,52 @@
             splitContainer1.SplitterDistance = 250;
             splitContainer1.TabIndex = 0;
             // 
+            // treeView1
+            // 
+            treeView1.ContextMenuStrip = menuTreeView;
+            treeView1.Dock = DockStyle.Fill;
+            treeView1.Location = new Point(0, 32);
+            treeView1.Name = "treeView1";
+            treeView1.Size = new Size(250, 649);
+            treeView1.TabIndex = 0;
+            treeView1.NodeMouseClick += treeView1_NodeMouseClick;
+            treeView1.NodeMouseDoubleClick += treeView1_NodeMouseDoubleClick;
+            // 
+            // menuTreeView
+            // 
+            menuTreeView.Items.AddRange(new ToolStripItem[] { verDDLToolStripMenuItem, exportarDDLToolStripMenuItem, selectToolStripMenuItem, crearToolStripMenuItem });
+            menuTreeView.Name = "menuTreeView";
+            menuTreeView.Size = new Size(181, 114);
+            menuTreeView.Opening += menuTreeView_Opening;
+            // 
+            // verDDLToolStripMenuItem
+            // 
+            verDDLToolStripMenuItem.Name = "verDDLToolStripMenuItem";
+            verDDLToolStripMenuItem.Size = new Size(180, 22);
+            verDDLToolStripMenuItem.Text = "Ver DDL";
+            verDDLToolStripMenuItem.Click += verDDLToolStripMenuItem_Click;
+            // 
+            // exportarDDLToolStripMenuItem
+            // 
+            exportarDDLToolStripMenuItem.Name = "exportarDDLToolStripMenuItem";
+            exportarDDLToolStripMenuItem.Size = new Size(180, 22);
+            exportarDDLToolStripMenuItem.Text = "Exportar DDL a SQL";
+            exportarDDLToolStripMenuItem.Click += exportarDDLToolStripMenuItem_Click;
+            // 
+            // selectToolStripMenuItem
+            // 
+            selectToolStripMenuItem.Name = "selectToolStripMenuItem";
+            selectToolStripMenuItem.Size = new Size(180, 22);
+            selectToolStripMenuItem.Text = "Select * (Top 100))";
+            selectToolStripMenuItem.Click += selectToolStripMenuItem_Click;
+            // 
+            // crearToolStripMenuItem
+            // 
+            crearToolStripMenuItem.Name = "crearToolStripMenuItem";
+            crearToolStripMenuItem.Size = new Size(180, 22);
+            crearToolStripMenuItem.Text = "Crear...";
+            crearToolStripMenuItem.Click += crearToolStripMenuItem_Click;
+            // 
             // panel1
             // 
             panel1.BackColor = SystemColors.ControlLight;
@@ -120,51 +166,6 @@
             label1.Size = new Size(68, 15);
             label1.TabIndex = 0;
             label1.Text = "Navegador";
-            // 
-            // treeView1
-            // 
-            treeView1.ContextMenuStrip = menuTreeView;
-            treeView1.Dock = DockStyle.Fill;
-            treeView1.Location = new Point(0, 32);
-            treeView1.Name = "treeView1";
-            treeView1.Size = new Size(250, 649);
-            treeView1.TabIndex = 0;
-            treeView1.NodeMouseClick += treeView1_NodeMouseClick;
-            treeView1.NodeMouseDoubleClick += treeView1_NodeMouseDoubleClick;
-            // 
-            // menuTreeView
-            // 
-            menuTreeView.Items.AddRange(new ToolStripItem[] { verDDLToolStripMenuItem, exportarDDLToolStripMenuItem, selectToolStripMenuItem, crearToolStripMenuItem });
-            menuTreeView.Name = "menuTreeView";
-            menuTreeView.Size = new Size(176, 92);
-            menuTreeView.Opening += menuTreeView_Opening;
-            // 
-            // verDDLToolStripMenuItem
-            // 
-            verDDLToolStripMenuItem.Name = "verDDLToolStripMenuItem";
-            verDDLToolStripMenuItem.Size = new Size(175, 22);
-            verDDLToolStripMenuItem.Text = "Ver DDL";
-            verDDLToolStripMenuItem.Click += verDDLToolStripMenuItem_Click;
-            // 
-            // exportarDDLToolStripMenuItem
-            // 
-            exportarDDLToolStripMenuItem.Name = "exportarDDLToolStripMenuItem";
-            exportarDDLToolStripMenuItem.Size = new Size(175, 22);
-            exportarDDLToolStripMenuItem.Text = "Exportar DDL a SQL";
-            exportarDDLToolStripMenuItem.Click += exportarDDLToolStripMenuItem_Click;
-            // 
-            // selectToolStripMenuItem
-            // 
-            selectToolStripMenuItem.Name = "selectToolStripMenuItem";
-            selectToolStripMenuItem.Size = new Size(175, 22);
-            selectToolStripMenuItem.Text = "Select * (Top 100))";
-            selectToolStripMenuItem.Click += selectToolStripMenuItem_Click;
-            // 
-            // crearToolStripMenuItem
-            // 
-            crearToolStripMenuItem.Name = "crearToolStripMenuItem";
-            crearToolStripMenuItem.Size = new Size(175, 22);
-            crearToolStripMenuItem.Text = "Crear...";
             // 
             // splitContSQLDDL
             // 
@@ -387,9 +388,9 @@
             splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
+            menuTreeView.ResumeLayout(false);
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
-            menuTreeView.ResumeLayout(false);
             splitContSQLDDL.Panel1.ResumeLayout(false);
             splitContSQLDDL.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContSQLDDL).EndInit();

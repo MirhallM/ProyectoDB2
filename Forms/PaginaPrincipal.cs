@@ -58,8 +58,8 @@ namespace ProyectoDB2
 
         private void AplicarModoEditor(ModoEditor modo)
         {
-            // Guardar lo que el usuario escribía en SQL antes de cambiar
-            if (modoActual == ModoEditor.SQL)
+            // Solo guardamos el SQL si estamos SALIENDO del modo SQL
+            if (modoActual == ModoEditor.SQL && modo != ModoEditor.SQL)
                 sqlActual = richTxtBoxSQL.Text;
 
             modoActual = modo;
@@ -255,11 +255,15 @@ namespace ProyectoDB2
                 _ => false
             };
 
+            bool esCarpeta = info.Tipo == TipoObjetoBD.Carpeta;
+            bool esTablas = esCarpeta && nodo.Text.Trim().Equals("Tablas", StringComparison.OrdinalIgnoreCase);
+            bool esVistas = esCarpeta && nodo.Text.Trim().Equals("Vistas", StringComparison.OrdinalIgnoreCase);
+
             verDDLToolStripMenuItem.Enabled = permiteDDL;
             exportarDDLToolStripMenuItem.Enabled = permiteDDL;
             selectToolStripMenuItem.Enabled = permiteSelect;
 
-            crearToolStripMenuItem.Enabled = false;
+            crearToolStripMenuItem.Enabled = esTablas || esVistas;
         }
 
         private void verDDLToolStripMenuItem_Click(object sender, EventArgs e)
@@ -363,6 +367,119 @@ namespace ProyectoDB2
                 EscribirMensaje("Error al refrescar el navegador: " + ex.Message);
             }
 
+        }
+
+        private List<string> ObtenerEsquemasDesdeTreeView()
+        {
+            List<string> esquemas = new List<string>();
+
+            // Buscamos: Conexiones -> DB2_Actual -> Esquemas -> (APP, etc)
+            TreeNode? nodoConexiones = treeView1.Nodes.Count > 0 ? treeView1.Nodes[0] : null;
+            if (nodoConexiones == null) return esquemas;
+
+            TreeNode? nodoConexion = (nodoConexiones.Nodes.Count > 0) ? nodoConexiones.Nodes[0] : null;
+            if (nodoConexion == null) return esquemas;
+
+            TreeNode? nodoEsquemas = null;
+            foreach (TreeNode n in nodoConexion.Nodes)
+            {
+                if (n.Text.Trim().Equals("Esquemas", StringComparison.OrdinalIgnoreCase))
+                {
+                    nodoEsquemas = n;
+                    break;
+                }
+            }
+
+            if (nodoEsquemas == null) return esquemas;
+
+            foreach (TreeNode n in nodoEsquemas.Nodes)
+            {
+                string esq = n.Text.Trim();
+                if (!string.IsNullOrWhiteSpace(esq))
+                    esquemas.Add(esq);
+            }
+
+            // Quitar repetidos y ordenar
+            esquemas = esquemas
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x)
+                .ToList();
+
+            return esquemas;
+        }
+
+        private string ObtenerEsquemaContexto(TreeNode? nodo)
+        {
+            if (nodo == null) return "";
+
+            // Si el nodo tiene Tag InfoNodoBD y trae Esquema, lo usamos
+            if (nodo.Tag is InfoNodoBD info && !string.IsNullOrWhiteSpace(info.Esquema))
+                return info.Esquema.Trim();
+
+            // Si no, subimos hacia arriba hasta encontrar uno que tenga Esquema
+            TreeNode? actual = nodo.Parent;
+            while (actual != null)
+            {
+                if (actual.Tag is InfoNodoBD info2 && !string.IsNullOrWhiteSpace(info2.Esquema))
+                    return info2.Esquema.Trim();
+
+                actual = actual.Parent;
+            }
+
+            return "";
+        }
+
+        private void crearToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (treeView1.SelectedNode == null) return;
+
+            string textoNodo = treeView1.SelectedNode.Text.Trim();
+
+            // Solo permitir crear cuando esté en la carpeta "Tablas"
+            if (!textoNodo.Equals("Tablas", StringComparison.OrdinalIgnoreCase))
+            {
+                EscribirMensaje("Para crear una tabla, hacé clic derecho sobre la carpeta 'Tablas'.");
+                return;
+            }
+
+            // Obtener esquema del contexto
+            string esquemaContexto = ObtenerEsquemaContexto(treeView1.SelectedNode);
+
+            // Lista de esquemas
+            List<string> esquemas = ObtenerEsquemasDesdeTreeView();
+
+            if (!string.IsNullOrWhiteSpace(esquemaContexto))
+            {
+                esquemas.RemoveAll(x => x.Equals(esquemaContexto, StringComparison.OrdinalIgnoreCase));
+                esquemas.Insert(0, esquemaContexto);
+            }
+
+            // Abrir Paso 1
+            using (var paso1 = new ProyectoDB2.Forms.CrearTablaPaso1(esquemas))
+            {
+                var resPaso1 = paso1.ShowDialog(this);
+
+                if (resPaso1 != DialogResult.OK)
+                {
+                    EscribirMensaje("Creación de tabla cancelada.");
+                    return;
+                }
+
+                // Si todo salió bien, paso1 ya trae el DDL generado por paso2
+                string ddl = paso1.DdlGenerado;
+
+                if (string.IsNullOrWhiteSpace(ddl))
+                {
+                    EscribirMensaje("No se generó el DDL.");
+                    return;
+                }
+
+                // Mandarlo al editor SQL
+                sqlActual = ddl;
+                AplicarModoEditor(ModoEditor.SQL);
+
+                EscribirMensaje("DDL de CREATE TABLE generado por el wizard.");
+            }
         }
     }
 }
